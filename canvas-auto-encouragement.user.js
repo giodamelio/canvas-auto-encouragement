@@ -23,18 +23,44 @@
     'Looking good',
   ];
 
-  // Add a button after the comment field. The callback should return the encouragement to add to the comment box.
+  // Add a button after the comment field.
+  // The first callback should return the encouragement to add to the comment box.
+  // The second determines weather it should replace the first sentence of the comment box.
   const comment_text_area = $('#speedgrader_comment_textarea');
-  function addEncourageButton(text, callback) {
+  function addEncourageButton(text, generateEncouragementCallback, shouldReplaceCallback) {
     const button = $('<button>', { class: 'Button Button--small', text: text });
     button.click(function(e) {
       e.preventDefault();
-      const encouragementToAdd = callback();
-      comment_text_area.val(encouragementToAdd + ' ' + comment_text_area.val());
+      const comment_val = comment_text_area.val();
+      const encouragementToAdd = generateEncouragementCallback();
+      const shouldReplace = shouldReplaceCallback(comment_val);
+
+      if (shouldReplace) {
+        // Delete until first space
+        const withoutFirstSentence = comment_val.replace(new RegExp(/([A-Za-z ]+[!\.] )(.+)/), '$2');
+
+        // If the encouragement is all there is, replace it. Otherwise replace it an add back the rest of the comment.
+        if (comment_val === withoutFirstSentence) {
+          comment_text_area.val(encouragementToAdd + ' ');
+        } else {
+          comment_text_area.val(encouragementToAdd + ' ' + withoutFirstSentence);
+        }
+      } else {
+        comment_text_area.val(encouragementToAdd + ' ' + comment_val);
+      }
     });
     $('#add_a_comment').after(button);
   }
 
-  addEncourageButton('Auto Encourage', () => random_element(encouragements) + '.');
-  addEncourageButton('Auto Encourage!!!', () => random_element(encouragements) + '!');
+  addEncourageButton(
+    'Auto Encourage',
+    () => random_element(encouragements) + '.',
+    (text) => encouragements.some((e) => text.startsWith(e)),
+  );
+
+  addEncourageButton(
+    'Auto Encourage!!!',
+    () => random_element(encouragements) + '!',
+    (text) => encouragements.some((e) => text.startsWith(e)),
+  );
 })();
