@@ -5,6 +5,7 @@
 // @description  Words are hard.
 // @author       Gio d'Amelio
 // @match        https://canvas.instructure.com/courses/*/gradebook/speed_grader*
+// @require      https://code.jquery.com/jquery-3.2.1.min.js
 // @grant        none
 // ==/UserScript==
 
@@ -22,29 +23,18 @@
     'Looking good',
   ];
 
-  // Add the button
-  const button_auto = document.createElement('button');
-  button_auto.innerHTML = 'Auto Encourage';
-  button_auto.className = 'Button Button--small';
-  document.getElementById('add_a_comment').appendChild(button_auto);
+  // Add a button after the comment field. The callback should return the encouragement to add to the comment box.
+  const comment_text_area = $('#speedgrader_comment_textarea');
+  function addEncourageButton(text, callback) {
+    const button = $('<button>', { class: 'Button Button--small', text: text });
+    button.click(function(e) {
+      e.preventDefault();
+      const encouragementToAdd = callback();
+      comment_text_area.val(encouragementToAdd + ' ' + comment_text_area.val());
+    });
+    $('#add_a_comment').after(button);
+  }
 
-  // When the user clicks the button copy the commands
-  button_auto.onclick = function(e) {
-    e.preventDefault();
-    const comment_textarea = document.getElementById('speedgrader_comment_textarea');
-    comment_textarea.value = random_element(encouragements) + '. ' + comment_textarea.value;
-  };
-
-  // Add the button
-  const button_auto_extra = document.createElement('button');
-  button_auto_extra.innerHTML = 'Auto Encourage!!!';
-  button_auto_extra.className = 'Button Button--small';
-  document.getElementById('add_a_comment').appendChild(button_auto_extra);
-
-  // When the user clicks the button copy the commands
-  button_auto_extra.onclick = function(e) {
-    e.preventDefault();
-    const comment_textarea = document.getElementById('speedgrader_comment_textarea');
-    comment_textarea.value = random_element(encouragements) + '! ' + comment_textarea.value;
-  };
+  addEncourageButton('Auto Encourage', () => random_element(encouragements) + '.');
+  addEncourageButton('Auto Encourage!!!', () => random_element(encouragements) + '!');
 })();
